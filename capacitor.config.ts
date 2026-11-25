@@ -3,13 +3,12 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.kwatta.app',
   appName: 'Kwatta',
-  webDir: '.next',
+  webDir: 'www',
   server: {
-    // En mode développement, pointez vers votre serveur local
-    // En production, configurez l'URL de votre backend déployé
-    url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
-    cleartext: true,
-    androidScheme: 'http'
+    // Pour connecter à un backend déployé, décommentez et configurez l'URL :
+    // url: 'https://votre-backend.com',
+    // cleartext: true,
+    androidScheme: 'https'
   }
 };
 

@@ -6,7 +6,7 @@ storage
 next-env.d.ts
 
 # Capacitor
-out
+www
 android
 ios
 .capacitor

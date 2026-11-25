@@ -9,11 +9,6 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-env:
-  # URL du backend déployé (à configurer dans les secrets GitHub)
-  # Pour l'instant on utilise une URL de développement
-  NEXT_PUBLIC_API_URL: ${{ secrets.API_URL || 'http://localhost:3000' }}
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -40,23 +35,61 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Create .env file for Capacitor
+      - name: Create basic index.html for Capacitor
         run: |
-          echo "NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }}" > .env.production
+          mkdir -p www
+          cat > www/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Kwatta</title>
+            <style>
+              body { 
+                font-family: system-ui, -apple-system, sans-serif; 
+                margin: 0; 
+                padding: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                background: linear-gradient(135deg, #00431E 0%, #A53C00 100%);
+                color: white;
+              }
+              .container {
+                text-align: center;
+                max-width: 400px;
+              }
+              h1 { font-size: 2.5em; margin-bottom: 0.5em; }
+              p { font-size: 1.1em; line-height: 1.6; opacity: 0.9; }
+              .btn {
+                display: inline-block;
+                margin-top: 2em;
+                padding: 15px 40px;
+                background: white;
+                color: #00431E;
+                text-decoration: none;
+                border-radius: 8px;
+                font-weight: bold;
+                font-size: 1.1em;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>🌍 Kwatta</h1>
+              <p>Application de signalement de dépôts sauvages à Yaoundé</p>
+              <p><small>Pour utiliser l'application, veuillez d'abord déployer le backend.</small></p>
+              <a href="#" class="btn" onclick="alert('Configurez l\'URL du backend dans capacitor.config.ts'); return false;">
+                En savoir plus
+              </a>
+            </div>
+          </body>
+          </html>
+          EOF
 
-      - name: Initialize Capacitor (if not already done)
-        run: |
-          if [ ! -d "android" ]; then
-            npx cap init Kwatta com.kwatta.app --web-dir=.next
-          fi
-
-      - name: Add Android platform
-        run: |
-          if [ ! -d "android" ]; then
-            npx cap add android
-          fi
-
-      - name: Update capacitor.config.ts with server URL
+      - name: Update capacitor.config.ts for build
         run: |
           cat > capacitor.config.ts << 'EOF'
           import type { CapacitorConfig } from '@capacitor/cli';
@@ -64,16 +97,18 @@ jobs:
           const config: CapacitorConfig = {
             appId: 'com.kwatta.app',
             appName: 'Kwatta',
-            webDir: '.next',
+            webDir: 'www',
             server: {
-              url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
-              cleartext: true,
-              androidScheme: 'http'
+              androidScheme: 'https'
             }
           };
 
           export default config;
           EOF
+
+      - name: Initialize Capacitor Android
+        run: |
+          npx cap add android || echo "Android already added"
 
       - name: Sync Capacitor
         run: npx cap sync android
@@ -82,19 +117,22 @@ jobs:
         run: chmod +x android/gradlew
 
       - name: Build debug APK
-        run: cd android && ./gradlew assembleDebug --no-daemon
+        run: cd android && ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
 
-      - name: Create Release (on tag push)
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            android/app/build/outputs/apk/debug/app-debug.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build summary
+        run: |
+          echo "✅ APK built successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Download the APK from the Artifacts section above." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ This is a placeholder app. To use the full Kwatta app:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Deploy the backend (see BACKEND_DEPLOY.md)" >> $GITHUB_STEP_SUMMARY
+          echo "2. Configure the backend URL in capacitor.config.ts" >> $GITHUB_STEP_SUMMARY
+          echo "3. Push a new commit to rebuild with the backend connection" >> $GITHUB_STEP_SUMMARY
