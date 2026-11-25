@@ -1,0 +1,42 @@
+{
+  "name": "kwatta",
+  "version": "0.1.0",
+  "private": true,
+  "engines": { "node": ">=20.6" },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "smoke": "node scripts/smoke.mjs",
+    "test": "vitest run",
+    "db:migrate": "tsx --env-file=.env db/migrate.ts",
+    "db:seed": "tsx --env-file=.env db/seed.ts",
+    "db:setup": "npm run db:migrate && npm run db:seed",
+    "cap:init": "cap init Kwatta com.kwatta.app --web-dir=out",
+    "cap:add": "cap add android",
+    "cap:sync": "cap sync android",
+    "cap:copy": "cap copy android",
+    "cap:build": "npm run build && cap sync android",
+    "android:build": "cd android && ./gradlew assembleRelease",
+    "android:build-debug": "cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "next": "^15.1.0",
+    "pg": "^8.13.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2",
+    "@types/node": "^20.14.0",
+    "@types/pg": "^8.11.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
