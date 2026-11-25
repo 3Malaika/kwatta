@@ -94,7 +94,8 @@ jobs:
 
       - name: Update capacitor.config.ts for build
         run: |
-          cat > capacitor.config.ts << 'EOF'
+          BACKEND_URL="${{ secrets.BACKEND_URL || 'https://kwatta-production.up.railway.app' }}"
+          cat > capacitor.config.ts << EOF
           import type { CapacitorConfig } from '@capacitor/cli';
 
           const config: CapacitorConfig = {
@@ -102,6 +103,8 @@ jobs:
             appName: 'Kwatta',
             webDir: 'www',
             server: {
+              url: '$BACKEND_URL',
+              cleartext: false,
               androidScheme: 'https'
             }
           };
