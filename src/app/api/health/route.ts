@@ -28,7 +28,7 @@ export async function GET() {
 
   // 3. Tester la connexion à la base
   try {
-    await db.query("SELECT 1");
+    await db().query("SELECT 1");
     checks.databaseConnection = { status: "ok", message: "Connexion réussie" };
   } catch (err: any) {
     checks.databaseConnection = { status: "error", message: `Erreur de connexion : ${err.message}` };
@@ -36,7 +36,7 @@ export async function GET() {
 
   // 4. Vérifier que les tables existent
   try {
-    const result = await db.query(`
+    const result = await db().query(`
       SELECT COUNT(*) as count 
       FROM information_schema.tables 
       WHERE table_schema = 'public' 
@@ -54,7 +54,7 @@ export async function GET() {
 
   // 5. Vérifier qu'il y a au moins une zone active
   try {
-    const result = await db.query("SELECT COUNT(*) as count FROM zones WHERE active = true");
+    const result = await db().query("SELECT COUNT(*) as count FROM zones WHERE active = true");
     const count = parseInt(result.rows[0].count);
     if (count > 0) {
       checks.zones = { status: "ok", message: `${count} zone(s) active(s)` };
