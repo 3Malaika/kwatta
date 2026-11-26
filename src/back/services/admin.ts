@@ -6,9 +6,17 @@ import { db } from "@/data/db";
 import * as claimsRepo from "@/data/repos/claims";
 import * as usersRepo from "@/data/repos/users";
 
-export async function listPendingCollectors(actor: User): Promise<User[]> {
+/** Tous les collecteurs, les « à valider » en premier. */
+export async function listCollectors(actor: User): Promise<User[]> {
   assertCan(actor, "collector:validate");
-  return usersRepo.listPendingCollectors(db());
+  return usersRepo.listCollectors(db());
+}
+
+export async function suspendCollector(actor: User, id: string): Promise<User> {
+  assertCan(actor, "collector:validate");
+  const user = await usersRepo.setValidated(db(), id, false);
+  if (!user) throw new AppError("NOT_FOUND", "Collecteur introuvable.");
+  return user;
 }
 
 export async function validateCollector(actor: User, id: string): Promise<User> {

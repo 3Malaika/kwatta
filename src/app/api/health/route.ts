@@ -40,13 +40,13 @@ export async function GET() {
       SELECT COUNT(*) as count 
       FROM information_schema.tables 
       WHERE table_schema = 'public' 
-      AND table_name IN ('users', 'zones', 'reports', 'photos', 'events', 'claims', 'payments', 'settings')
+      AND table_name IN ('users', 'zones', 'reports', 'photos', 'report_events', 'claims', 'payments', 'settings', 'tariffs')
     `);
     const count = parseInt(result.rows[0].count);
-    if (count === 8) {
-      checks.tables = { status: "ok", message: "Toutes les tables existent (8/8)" };
+    if (count === 9) {
+      checks.tables = { status: "ok", message: "Toutes les tables existent (9/9)" };
     } else {
-      checks.tables = { status: "error", message: `Tables manquantes (${count}/8). Lancez: npm run db:setup` };
+      checks.tables = { status: "error", message: `Tables manquantes (${count}/9). Ouvrez /api/admin/migrate?secret=…` };
     }
   } catch (err: any) {
     checks.tables = { status: "error", message: `Impossible de vérifier les tables : ${err.message}` };

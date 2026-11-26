@@ -29,6 +29,7 @@ export function AdminHome() {
 
   const all = reports.data?.mine ?? [];
   const paid = all.filter((r) => r.status === "paid");
+  const toValidate = (collectors.data ?? []).filter((c) => !c.validated).length;
 
   return (
     <Shell role="admin" title="Administration">
@@ -41,20 +42,32 @@ export function AdminHome() {
 
         {error && <p className="error">{error}</p>}
 
-        <h3 className="section">Collecteurs à valider</h3>
-        {(collectors.data?.length ?? 0) === 0 && <p className="muted">Aucun collecteur en attente.</p>}
+        <h3 className="section">
+          Collecteurs {toValidate > 0 && <span className="pill pill-pending">{toValidate} à valider</span>}
+        </h3>
+        {collectors.error && <p className="error">Impossible de charger les collecteurs : {collectors.error.message}</p>}
+        {collectors.loading && <p className="muted">Chargement…</p>}
+        {!collectors.loading && !collectors.error && (collectors.data?.length ?? 0) === 0 && (
+          <p className="muted">Aucun collecteur inscrit pour l’instant. Ils apparaissent ici dès leur inscription.</p>
+        )}
         {collectors.data?.map((c) => (
           <Card key={c.id} className="row">
             <div>
               <strong>{c.name}</strong>
               <div className="muted small">{c.phone}</div>
+              <span className={`pill ${c.validated ? "pill-collected" : "pill-pending"}`}>{c.validated ? "Actif" : "À valider"}</span>
             </div>
-            <Button onClick={() => act(`/api/admin/collectors/${c.id}/validate`)}>Valider</Button>
+            {c.validated ? (
+              <Button variant="ghost" onClick={() => act(`/api/admin/collectors/${c.id}/suspend`)}>Suspendre</Button>
+            ) : (
+              <Button onClick={() => act(`/api/admin/collectors/${c.id}/validate`)}>Valider</Button>
+            )}
           </Card>
         ))}
 
         <h3 className="section">Réclamations ouvertes</h3>
-        {(claims.data?.length ?? 0) === 0 && <p className="muted">Aucune réclamation.</p>}
+        {claims.error && <p className="error">{claims.error.message}</p>}
+        {(claims.data?.length ?? 0) === 0 && !claims.error && <p className="muted">Aucune réclamation.</p>}
         {claims.data?.map((c) => (
           <Card key={c.id} className="stack">
             <div className="small">{c.reason}</div>
