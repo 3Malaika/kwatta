@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
-// 🔧 CONFIGURATION : Remplacez cette URL par votre backend Railway
-const BACKEND_URL = process.env.BACKEND_URL || 'https://VOTRE-APP.up.railway.app';
+// 🔧 CONFIGURATION : Backend Railway déployé
+const BACKEND_URL = process.env.BACKEND_URL || 'https://kwatta-production.up.railway.app';
 
 const config: CapacitorConfig = {
   appId: 'com.kwatta.app',
